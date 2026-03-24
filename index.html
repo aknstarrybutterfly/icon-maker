@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>アイコン作成</title>
+<title>アプリアイコン作成</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#007aff">
@@ -123,7 +123,7 @@ input[type="text"] {
 
 <body>
 
-<div class="header">アイコン作成</div>
+<div class="header">アプリアイコン作成</div>
 
 <div class="container">
   <div id="list"></div>
@@ -161,6 +161,11 @@ function render() {
   const list = document.getElementById("list");
   list.innerHTML = "";
 
+  if (items.length === 0) {
+    list.innerHTML = '<div class="note">＋ボタンでアイコンを追加してください</div>';
+    return;
+  }
+
   items.forEach((item, i) => {
     const img = createImage(item);
 
@@ -170,7 +175,7 @@ function render() {
     div.innerHTML = `
       <img src="${img}" class="preview" />
 
-      <input placeholder="文字 or 絵文字" value="${item.text}" onchange="updateText(${i}, this.value)" />
+      <input placeholder="文字 or 絵文字（改行OK）" value="${item.text}" onchange="updateText(${i}, this.value)" />
 
       <div class="color-row">
         ${colors.map(c =>
@@ -225,18 +230,58 @@ function createImage(item) {
   ctx.fillStyle = item.color;
   ctx.fillRect(0, 0, 1024, 1024);
 
-  let fontSize = item.size;
-  ctx.font = `bold ${fontSize}px sans-serif`;
-
-  while (ctx.measureText(item.text).width > 800) {
-    fontSize -= 20;
-    ctx.font = `bold ${fontSize}px sans-serif`;
-  }
-
   ctx.fillStyle = "white";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(item.text, 512, 512);
+
+  let fontSize = item.size;
+  ctx.font = `bold ${fontSize}px sans-serif`;
+
+  let lines = item.text.split("\n");
+
+  function wrapText(text) {
+    const maxWidth = 800;
+    let result = [];
+    let current = "";
+
+    for (let char of text) {
+      let test = current + char;
+      if (ctx.measureText(test).width > maxWidth) {
+        result.push(current);
+        current = char;
+      } else {
+        current = test;
+      }
+    }
+    if (current) result.push(current);
+    return result;
+  }
+
+  let finalLines = [];
+  lines.forEach(line => {
+    finalLines.push(...wrapText(line));
+  });
+
+  while (true) {
+    ctx.font = `bold ${fontSize}px sans-serif`;
+
+    let tooWide = finalLines.some(line => ctx.measureText(line).width > 800);
+    let totalHeight = finalLines.length * fontSize * 1.2;
+
+    if (!tooWide && totalHeight < 900) break;
+
+    fontSize -= 10;
+    if (fontSize < 100) break;
+  }
+
+  ctx.font = `bold ${fontSize}px sans-serif`;
+
+  const lineHeight = fontSize * 1.2;
+  const startY = 512 - (finalLines.length - 1) * lineHeight / 2;
+
+  finalLines.forEach((line, i) => {
+    ctx.fillText(line, 512, startY + i * lineHeight);
+  });
 
   return canvas.toDataURL();
 }
