@@ -23,7 +23,8 @@ body {
   width:90px; height:90px;
   border-radius:22px;
   margin-bottom:10px;
-  pointer-events:none;
+  user-select:none;
+  -webkit-user-select:none;
 }
 textarea,input {
   width:100%; padding:10px;
@@ -75,7 +76,6 @@ textarea,input {
   <button class="add" onclick="addItem()">＋追加</button>
 </div>
 
-<!-- ▼ ここ復活 -->
 <div class="section">
 <h3>使い方</h3>
 <p>
@@ -93,14 +93,29 @@ textarea,input {
 </div>
 
 <script>
-let items = [
-  { text:"タイトル", emoji:"💡", color:"#34c759", textSize:200, emojiSize:400 }
-];
-
+const emojiList = ["🍎","🍬","💐","🛣️","⭐️","👑"];
 const colors = ["#ff3b30","#007aff","#34c759","#ffcc00","#af52de"];
 
+function getRandomEmoji(){
+  return emojiList[Math.floor(Math.random()*emojiList.length)];
+}
+
+function getRandomColor(){
+  return colors[Math.floor(Math.random()*colors.length)];
+}
+
+let items = [
+  { text:"タイトル", emoji:getRandomEmoji(), color:getRandomColor(), textSize:200, emojiSize:400 }
+];
+
 function addItem(){
-  items.push({ text:"タイトル", emoji:"⭐", color:"#007aff", textSize:200, emojiSize:400 });
+  items.push({
+    text:"タイトル",
+    emoji:getRandomEmoji(),
+    color:getRandomColor(),
+    textSize:200,
+    emojiSize:400
+  });
   render();
 }
 
@@ -171,7 +186,6 @@ function createImage(item){
   ctx.fillText(item.emoji,512,emojiY);
 
   let startY=emojiY+item.emojiSize/2+50;
-
   let fontSize=item.textSize;
 
   function wrap(text){
