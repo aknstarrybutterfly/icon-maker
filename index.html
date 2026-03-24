@@ -42,17 +42,7 @@ body {
   pointer-events: none;
 }
 
-textarea {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  resize: none;
-}
-
-input {
+textarea, input {
   width: 100%;
   padding: 10px;
   font-size: 16px;
@@ -149,6 +139,11 @@ function render() {
   const list = document.getElementById("list");
   list.innerHTML = "";
 
+  if (items.length === 0) {
+    list.innerHTML = '<div class="note">＋で追加してください</div>';
+    return;
+  }
+
   items.forEach((item, i) => {
     const img = createImage(item);
 
@@ -236,38 +231,45 @@ function createImage(item) {
   ctx.textBaseline = "middle";
   ctx.fillText(item.emoji, 512, 300);
 
-  // テキスト
   ctx.fillStyle = "white";
 
   let fontSize = item.textSize;
-  let lines = item.text.split("\n");
 
-  function wrap(text) {
-    let result = [];
-    let current = "";
+  function wrapText(text, fontSize) {
+    ctx.font = `bold ${fontSize}px sans-serif`;
 
-    for (let char of text) {
-      let test = current + char;
-      if (ctx.measureText(test).width > 800) {
-        result.push(current);
-        current = char;
-      } else {
-        current = test;
+    const maxWidth = 800;
+    let lines = [];
+
+    text.split("\n").forEach(line => {
+      let current = "";
+
+      for (let char of line) {
+        let test = current + char;
+        if (ctx.measureText(test).width > maxWidth) {
+          if (current) lines.push(current);
+          current = char;
+        } else {
+          current = test;
+        }
       }
-    }
-    if (current) result.push(current);
-    return result;
+      if (current) lines.push(current);
+    });
+
+    return lines;
   }
 
-  let finalLines = [];
-  lines.forEach(l => finalLines.push(...wrap(l)));
+  let finalLines;
 
   while (true) {
-    ctx.font = `bold ${fontSize}px sans-serif`;
-    let tooWide = finalLines.some(line => ctx.measureText(line).width > 800);
-    let height = finalLines.length * fontSize * 1.2;
+    finalLines = wrapText(item.text, fontSize);
 
-    if (!tooWide && height < 500) break;
+    ctx.font = `bold ${fontSize}px sans-serif`;
+
+    let tooWide = finalLines.some(line => ctx.measureText(line).width > 800);
+    let totalHeight = finalLines.length * fontSize * 1.2;
+
+    if (!tooWide && totalHeight < 500) break;
 
     fontSize -= 10;
     if (fontSize < 80) break;
