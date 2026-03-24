@@ -38,6 +38,9 @@ body {
   border-radius: 22px;
   display: block;
   margin-bottom: 10px;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
 }
 
 input[type="text"] {
@@ -62,22 +65,48 @@ input[type="text"] {
 }
 
 .button {
-  width: 100%;
   padding: 14px;
   border-radius: 12px;
   border: none;
   font-size: 16px;
+  flex: 1;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
   margin-top: 10px;
 }
 
 .add {
   background: #007aff;
   color: white;
+  width: 100%;
 }
 
 .save {
   background: #34c759;
   color: white;
+}
+
+.delete {
+  background: #ff3b30;
+  color: white;
+  flex: 0 0 60px;
+}
+
+.size-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.size-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
 }
 
 .note {
@@ -98,7 +127,7 @@ input[type="text"] {
 
 <div class="container">
   <div id="list"></div>
-  <button class="button add" onclick="addItem()">＋アイコン追加</button>
+  <button class="add" onclick="addItem()">＋アイコン追加</button>
 </div>
 
 <div class="section">
@@ -118,13 +147,13 @@ input[type="text"] {
 
 <script>
 let items = [
-  { text: "ペンラ", color: "#34c759" }
+  { text: "タイトル", color: "#34c759", size: 400 }
 ];
 
 const colors = ["#ff3b30","#007aff","#34c759","#ffcc00","#af52de"];
 
 function addItem() {
-  items.push({ text: "新規", color: "#007aff" });
+  items.push({ text: "タイトル", color: "#007aff", size: 400 });
   render();
 }
 
@@ -140,7 +169,8 @@ function render() {
 
     div.innerHTML = `
       <img src="${img}" class="preview" />
-      <input value="${item.text}" onchange="updateText(${i}, this.value)" />
+
+      <input placeholder="文字 or 絵文字" value="${item.text}" onchange="updateText(${i}, this.value)" />
 
       <div class="color-row">
         ${colors.map(c =>
@@ -148,7 +178,17 @@ function render() {
         ).join("")}
       </div>
 
-      <button class="button save" onclick="downloadOne(${i})">保存</button>
+      <div class="size-row">
+        <button class="size-btn" onclick="changeSize(${i}, 20)">＋</button>
+        <button class="size-btn" onclick="changeSize(${i}, -20)">－</button>
+        <div class="note">サイズ: ${item.size}px</div>
+      </div>
+
+      <div class="button-row">
+        <button class="button save" onclick="downloadOne(${i})">保存</button>
+        <button class="button delete" onclick="deleteItem(${i})">×</button>
+      </div>
+
       <div class="note">長押しでも保存できます</div>
     `;
 
@@ -166,6 +206,16 @@ function updateColor(i, val) {
   render();
 }
 
+function changeSize(i, delta) {
+  items[i].size = Math.max(100, items[i].size + delta);
+  render();
+}
+
+function deleteItem(i) {
+  items.splice(i, 1);
+  render();
+}
+
 function createImage(item) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
@@ -175,8 +225,15 @@ function createImage(item) {
   ctx.fillStyle = item.color;
   ctx.fillRect(0, 0, 1024, 1024);
 
+  let fontSize = item.size;
+  ctx.font = `bold ${fontSize}px sans-serif`;
+
+  while (ctx.measureText(item.text).width > 800) {
+    fontSize -= 20;
+    ctx.font = `bold ${fontSize}px sans-serif`;
+  }
+
   ctx.fillStyle = "white";
-  ctx.font = "bold 400px sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(item.text, 512, 512);
