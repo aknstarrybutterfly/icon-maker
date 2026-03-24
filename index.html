@@ -5,111 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>アプリアイコン作成</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#007aff">
-
 <style>
 body {
-  font-family: -apple-system, BlinkMacSystemFont;
+  font-family: -apple-system;
   margin: 0;
   background: #f2f2f7;
 }
-
-.header {
-  padding: 16px;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.container {
-  padding: 16px;
-}
-
+.header { padding:16px; font-size:20px; font-weight:bold; }
+.container { padding:16px; }
 .card {
-  background: white;
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 12px;
+  background:white;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:12px;
 }
-
 .preview {
-  width: 90px;
-  height: 90px;
-  border-radius: 22px;
-  display: block;
-  margin-bottom: 10px;
-  user-select: none;
-  pointer-events: none;
+  width:90px; height:90px;
+  border-radius:22px;
+  margin-bottom:10px;
+  pointer-events:none;
 }
-
-textarea, input {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+textarea,input {
+  width:100%; padding:10px;
+  margin-bottom:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
 }
-
-.color-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
+.color-row { display:flex; gap:10px; margin-bottom:10px; }
 .color {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width:36px; height:36px;
+  border-radius:50%;
 }
-
-.button {
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  font-size: 16px;
-  flex: 1;
-}
-
-.button-row {
-  display: flex;
-  gap: 10px;
-}
-
+.button-row { display:flex; gap:10px; }
+.button { flex:1; padding:12px; border:none; border-radius:10px; }
+.save { background:#34c759; color:white; }
+.delete { background:#ff3b30; color:white; width:60px; }
 .add {
-  background: #007aff;
-  color: white;
-  width: 100%;
+  width:100%;
+  background:#007aff;
+  color:white;
+  padding:14px;
+  border:none;
+  border-radius:12px;
 }
-
-.save {
-  background: #34c759;
-  color: white;
-}
-
-.delete {
-  background: #ff3b30;
-  color: white;
-  flex: 0 0 60px;
-}
-
 .size-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 10px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-bottom:10px;
 }
-
-.size-btn {
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  background: white;
+.size-btn { padding:6px 10px; }
+.section {
+  padding:16px;
+  font-size:14px;
 }
-
 .note {
-  font-size: 12px;
-  color: gray;
+  font-size:12px;
+  color:gray;
 }
 </style>
 </head>
@@ -120,59 +72,70 @@ textarea, input {
 
 <div class="container">
   <div id="list"></div>
-  <button class="add" onclick="addItem()">＋アイコン追加</button>
+  <button class="add" onclick="addItem()">＋追加</button>
+</div>
+
+<!-- ▼ ここ復活 -->
+<div class="section">
+<h3>使い方</h3>
+<p>
+① 絵文字とテキストを入力<br>
+② サイズや色を調整<br>
+③ 保存ボタン or 長押しで保存<br>
+④ ショートカットアプリでアイコン設定
+</p>
+
+<h3>プライバシーポリシー</h3>
+<p>
+当サイトでは広告配信のためにCookieを使用する場合があります。<br>
+取得する情報は個人を特定するものではありません。
+</p>
 </div>
 
 <script>
 let items = [
-  { text: "タイトル", emoji: "💡", color: "#34c759", textSize: 200, emojiSize: 400 }
+  { text:"タイトル", emoji:"💡", color:"#34c759", textSize:200, emojiSize:400 }
 ];
 
 const colors = ["#ff3b30","#007aff","#34c759","#ffcc00","#af52de"];
 
-function addItem() {
-  items.push({ text: "タイトル", emoji: "⭐", color: "#007aff", textSize: 200, emojiSize: 400 });
+function addItem(){
+  items.push({ text:"タイトル", emoji:"⭐", color:"#007aff", textSize:200, emojiSize:400 });
   render();
 }
 
-function render() {
+function render(){
   const list = document.getElementById("list");
   list.innerHTML = "";
 
-  if (items.length === 0) {
-    list.innerHTML = '<div class="note">＋で追加してください</div>';
+  if(items.length===0){
+    list.innerHTML='<div class="note">＋で追加してください</div>';
     return;
   }
 
-  items.forEach((item, i) => {
+  items.forEach((item,i)=>{
     const img = createImage(item);
 
-    const div = document.createElement("div");
-    div.className = "card";
+    const div=document.createElement("div");
+    div.className="card";
 
-    div.innerHTML = `
-      <img src="${img}" class="preview"/>
+    div.innerHTML=`
+      <img src="${img}" class="preview">
 
-      <input placeholder="絵文字" value="${item.emoji}" onchange="updateEmoji(${i}, this.value)" />
-
+      <input value="${item.emoji}" onchange="updateEmoji(${i},this.value)">
       <div class="size-row">
-        <span>絵文字</span>
-        <button class="size-btn" onclick="changeEmojiSize(${i}, 20)">＋</button>
-        <button class="size-btn" onclick="changeEmojiSize(${i}, -20)">－</button>
+        <button class="size-btn" onclick="changeEmojiSize(${i},20)">＋</button>
+        <button class="size-btn" onclick="changeEmojiSize(${i},-20)">－</button>
       </div>
 
-      <textarea rows="2" placeholder="テキスト（改行OK）" onchange="updateText(${i}, this.value)">${item.text}</textarea>
-
+      <textarea rows="2" onchange="updateText(${i},this.value)">${item.text}</textarea>
       <div class="size-row">
-        <span>文字</span>
-        <button class="size-btn" onclick="changeTextSize(${i}, 10)">＋</button>
-        <button class="size-btn" onclick="changeTextSize(${i}, -10)">－</button>
+        <button class="size-btn" onclick="changeTextSize(${i},10)">＋</button>
+        <button class="size-btn" onclick="changeTextSize(${i},-10)">－</button>
       </div>
 
       <div class="color-row">
-        ${colors.map(c =>
-          `<div class="color" style="background:${c}" onclick="updateColor(${i}, '${c}')"></div>`
-        ).join("")}
+        ${colors.map(c=>`<div class="color" style="background:${c}" onclick="updateColor(${i},'${c}')"></div>`).join("")}
       </div>
 
       <div class="button-row">
@@ -185,121 +148,81 @@ function render() {
   });
 }
 
-function updateText(i, val) {
-  items[i].text = val;
-  render();
-}
+function updateText(i,v){ items[i].text=v; render(); }
+function updateEmoji(i,v){ items[i].emoji=v; render(); }
+function updateColor(i,v){ items[i].color=v; render(); }
+function changeTextSize(i,d){ items[i].textSize=Math.max(80,items[i].textSize+d); render(); }
+function changeEmojiSize(i,d){ items[i].emojiSize=Math.max(100,items[i].emojiSize+d); render(); }
+function deleteItem(i){ items.splice(i,1); render(); }
 
-function updateEmoji(i, val) {
-  items[i].emoji = val;
-  render();
-}
+function createImage(item){
+  const canvas=document.createElement("canvas");
+  canvas.width=1024;
+  canvas.height=1024;
+  const ctx=canvas.getContext("2d");
 
-function updateColor(i, val) {
-  items[i].color = val;
-  render();
-}
+  ctx.fillStyle=item.color;
+  ctx.fillRect(0,0,1024,1024);
 
-function changeTextSize(i, delta) {
-  items[i].textSize = Math.max(80, items[i].textSize + delta);
-  render();
-}
+  ctx.textAlign="center";
 
-function changeEmojiSize(i, delta) {
-  items[i].emojiSize = Math.max(100, items[i].emojiSize + delta);
-  render();
-}
+  ctx.font=`${item.emojiSize}px sans-serif`;
+  const emojiY=200+item.emojiSize/2;
+  ctx.fillText(item.emoji,512,emojiY);
 
-function deleteItem(i) {
-  items.splice(i, 1);
-  render();
-}
+  let startY=emojiY+item.emojiSize/2+50;
 
-function createImage(item) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 1024;
-  canvas.height = 1024;
-  const ctx = canvas.getContext("2d");
+  let fontSize=item.textSize;
 
-  ctx.fillStyle = item.color;
-  ctx.fillRect(0, 0, 1024, 1024);
-
-  ctx.textAlign = "center";
-
-  // 絵文字
-  ctx.font = `${item.emojiSize}px sans-serif`;
-  ctx.textBaseline = "middle";
-  ctx.fillText(item.emoji, 512, 300);
-
-  ctx.fillStyle = "white";
-
-  let fontSize = item.textSize;
-
-  function wrapText(text, fontSize) {
-    ctx.font = `bold ${fontSize}px sans-serif`;
-
-    const maxWidth = 800;
-    let lines = [];
-
-    text.split("\n").forEach(line => {
-      let current = "";
-
-      for (let char of line) {
-        let test = current + char;
-        if (ctx.measureText(test).width > maxWidth) {
-          if (current) lines.push(current);
-          current = char;
-        } else {
-          current = test;
-        }
+  function wrap(text){
+    ctx.font=`bold ${fontSize}px sans-serif`;
+    let lines=[];
+    text.split("\n").forEach(line=>{
+      let current="";
+      for(let c of line){
+        let test=current+c;
+        if(ctx.measureText(test).width>800){
+          lines.push(current);
+          current=c;
+        }else current=test;
       }
-      if (current) lines.push(current);
+      if(current) lines.push(current);
     });
-
     return lines;
   }
 
-  let finalLines;
+  let lines;
 
-  while (true) {
-    finalLines = wrapText(item.text, fontSize);
+  while(true){
+    lines=wrap(item.text);
+    let height=lines.length*fontSize*1.2;
 
-    ctx.font = `bold ${fontSize}px sans-serif`;
+    if(height < (1024-startY-50)) break;
 
-    let tooWide = finalLines.some(line => ctx.measureText(line).width > 800);
-    let totalHeight = finalLines.length * fontSize * 1.2;
-
-    if (!tooWide && totalHeight < 500) break;
-
-    fontSize -= 10;
-    if (fontSize < 80) break;
+    fontSize-=10;
+    if(fontSize<80) break;
   }
 
-  ctx.font = `bold ${fontSize}px sans-serif`;
+  ctx.font=`bold ${fontSize}px sans-serif`;
+  ctx.fillStyle="white";
 
-  const lineHeight = fontSize * 1.2;
-  const startY = 650 - (finalLines.length - 1) * lineHeight / 2;
+  const lh=fontSize*1.2;
 
-  finalLines.forEach((line, i) => {
-    ctx.fillText(line, 512, startY + i * lineHeight);
+  lines.forEach((line,i)=>{
+    ctx.fillText(line,512,startY+i*lh);
   });
 
   return canvas.toDataURL();
 }
 
-function downloadOne(i) {
-  const img = createImage(items[i]);
-  const a = document.createElement("a");
-  a.href = img;
-  a.download = "icon.png";
+function downloadOne(i){
+  const a=document.createElement("a");
+  a.href=createImage(items[i]);
+  a.download="icon.png";
   a.click();
 }
 
 render();
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
-}
 </script>
 
 </body>
