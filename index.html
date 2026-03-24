@@ -39,11 +39,20 @@ body {
   display: block;
   margin-bottom: 10px;
   user-select: none;
-  -webkit-user-select: none;
   pointer-events: none;
 }
 
-input[type="text"] {
+textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  resize: none;
+}
+
+input {
   width: 100%;
   padding: 10px;
   font-size: 16px;
@@ -75,7 +84,6 @@ input[type="text"] {
 .button-row {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
 }
 
 .add {
@@ -113,11 +121,6 @@ input[type="text"] {
   font-size: 12px;
   color: gray;
 }
-
-.section {
-  padding: 16px;
-  font-size: 14px;
-}
 </style>
 </head>
 
@@ -130,41 +133,21 @@ input[type="text"] {
   <button class="add" onclick="addItem()">＋アイコン追加</button>
 </div>
 
-<div class="section">
-<h3>使い方</h3>
-<p>
-① アイコンを作成<br>
-② 保存ボタン or 長押しで保存<br>
-③ ショートカットアプリで設定
-</p>
-
-<h3>プライバシーポリシー</h3>
-<p>
-当サイトでは広告配信のためにCookieを使用する場合があります。<br>
-取得した情報は個人を特定するものではありません。
-</p>
-</div>
-
 <script>
 let items = [
-  { text: "タイトル", color: "#34c759", size: 400 }
+  { text: "タイトル", emoji: "💡", color: "#34c759", textSize: 200, emojiSize: 400 }
 ];
 
 const colors = ["#ff3b30","#007aff","#34c759","#ffcc00","#af52de"];
 
 function addItem() {
-  items.push({ text: "タイトル", color: "#007aff", size: 400 });
+  items.push({ text: "タイトル", emoji: "⭐", color: "#007aff", textSize: 200, emojiSize: 400 });
   render();
 }
 
 function render() {
   const list = document.getElementById("list");
   list.innerHTML = "";
-
-  if (items.length === 0) {
-    list.innerHTML = '<div class="note">＋ボタンでアイコンを追加してください</div>';
-    return;
-  }
 
   items.forEach((item, i) => {
     const img = createImage(item);
@@ -173,9 +156,23 @@ function render() {
     div.className = "card";
 
     div.innerHTML = `
-      <img src="${img}" class="preview" />
+      <img src="${img}" class="preview"/>
 
-      <input placeholder="文字 or 絵文字（改行OK）" value="${item.text}" onchange="updateText(${i}, this.value)" />
+      <input placeholder="絵文字" value="${item.emoji}" onchange="updateEmoji(${i}, this.value)" />
+
+      <div class="size-row">
+        <span>絵文字</span>
+        <button class="size-btn" onclick="changeEmojiSize(${i}, 20)">＋</button>
+        <button class="size-btn" onclick="changeEmojiSize(${i}, -20)">－</button>
+      </div>
+
+      <textarea rows="2" placeholder="テキスト（改行OK）" onchange="updateText(${i}, this.value)">${item.text}</textarea>
+
+      <div class="size-row">
+        <span>文字</span>
+        <button class="size-btn" onclick="changeTextSize(${i}, 10)">＋</button>
+        <button class="size-btn" onclick="changeTextSize(${i}, -10)">－</button>
+      </div>
 
       <div class="color-row">
         ${colors.map(c =>
@@ -183,18 +180,10 @@ function render() {
         ).join("")}
       </div>
 
-      <div class="size-row">
-        <button class="size-btn" onclick="changeSize(${i}, 20)">＋</button>
-        <button class="size-btn" onclick="changeSize(${i}, -20)">－</button>
-        <div class="note">サイズ: ${item.size}px</div>
-      </div>
-
       <div class="button-row">
         <button class="button save" onclick="downloadOne(${i})">保存</button>
         <button class="button delete" onclick="deleteItem(${i})">×</button>
       </div>
-
-      <div class="note">長押しでも保存できます</div>
     `;
 
     list.appendChild(div);
@@ -206,13 +195,23 @@ function updateText(i, val) {
   render();
 }
 
+function updateEmoji(i, val) {
+  items[i].emoji = val;
+  render();
+}
+
 function updateColor(i, val) {
   items[i].color = val;
   render();
 }
 
-function changeSize(i, delta) {
-  items[i].size = Math.max(100, items[i].size + delta);
+function changeTextSize(i, delta) {
+  items[i].textSize = Math.max(80, items[i].textSize + delta);
+  render();
+}
+
+function changeEmojiSize(i, delta) {
+  items[i].emojiSize = Math.max(100, items[i].emojiSize + delta);
   render();
 }
 
@@ -230,23 +229,26 @@ function createImage(item) {
   ctx.fillStyle = item.color;
   ctx.fillRect(0, 0, 1024, 1024);
 
-  ctx.fillStyle = "white";
   ctx.textAlign = "center";
+
+  // 絵文字
+  ctx.font = `${item.emojiSize}px sans-serif`;
   ctx.textBaseline = "middle";
+  ctx.fillText(item.emoji, 512, 300);
 
-  let fontSize = item.size;
-  ctx.font = `bold ${fontSize}px sans-serif`;
+  // テキスト
+  ctx.fillStyle = "white";
 
+  let fontSize = item.textSize;
   let lines = item.text.split("\n");
 
-  function wrapText(text) {
-    const maxWidth = 800;
+  function wrap(text) {
     let result = [];
     let current = "";
 
     for (let char of text) {
       let test = current + char;
-      if (ctx.measureText(test).width > maxWidth) {
+      if (ctx.measureText(test).width > 800) {
         result.push(current);
         current = char;
       } else {
@@ -258,26 +260,23 @@ function createImage(item) {
   }
 
   let finalLines = [];
-  lines.forEach(line => {
-    finalLines.push(...wrapText(line));
-  });
+  lines.forEach(l => finalLines.push(...wrap(l)));
 
   while (true) {
     ctx.font = `bold ${fontSize}px sans-serif`;
-
     let tooWide = finalLines.some(line => ctx.measureText(line).width > 800);
-    let totalHeight = finalLines.length * fontSize * 1.2;
+    let height = finalLines.length * fontSize * 1.2;
 
-    if (!tooWide && totalHeight < 900) break;
+    if (!tooWide && height < 500) break;
 
     fontSize -= 10;
-    if (fontSize < 100) break;
+    if (fontSize < 80) break;
   }
 
   ctx.font = `bold ${fontSize}px sans-serif`;
 
   const lineHeight = fontSize * 1.2;
-  const startY = 512 - (finalLines.length - 1) * lineHeight / 2;
+  const startY = 650 - (finalLines.length - 1) * lineHeight / 2;
 
   finalLines.forEach((line, i) => {
     ctx.fillText(line, 512, startY + i * lineHeight);
